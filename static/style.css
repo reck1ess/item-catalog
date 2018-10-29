@@ -137,6 +137,13 @@ ul {
     padding: 0 1.5rem;
 }
 
+.button:hover {
+    background-color: #d29f45;
+    border-color: #e8bc52;
+    color: #fff;
+    outline: 0;
+}
+
 .category-item__header .header__title {
     color: #fff;
     font-weight: 700;

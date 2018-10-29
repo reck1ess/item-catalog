@@ -1,5 +1,5 @@
 from flask import Flask, render_template, url_for, request, redirect, jsonify, make_response, flash
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, desc
 from sqlalchemy.orm import sessionmaker
 from database_setup import Base, Category, CategoryItem, User
 from flask import session as login_session
@@ -75,6 +75,37 @@ def showCategoryItem(catalog_id, item_id):
     author = getUserInfo(categoryItem.user_id)
 
     return render_template('categoryItem.html', categoryItem=categoryItem, author=author)
+
+
+@app.route('/catalog/add', methods=['GET', 'POST'])
+def addCategoryItem():
+    if 'username' not in login_session:
+        return redirect('/login')
+
+    if request.method == 'POST':
+
+        if not request.form['name']:
+            flash('Please add champion\'s name')
+            return redirect(url_for('addCategoryItem'))
+
+        if not request.form['description']:
+            flash('Please add a description')
+            return redirect(url_for('addCategoryItem'))
+
+        if not request.form['picture']:
+            flash('Please add a picture')
+            return redirect(url_for('addCategoryItem'))
+
+        newCategoryItem = CategoryItem(name=request.form['name'], description=request.form['description'], picture=request.form['picture'],
+                                       category_id=request.form['category'], user_id=login_session['user_id'])
+        session.add(newCategoryItem)
+        session.commit()
+
+        return redirect(url_for('showCategories'))
+    else:
+        categories = session.query(Category).all()
+
+        return render_template('addCategoryItem.html', categories=categories)
 
 
 @app.route('/login')
@@ -201,4 +232,4 @@ def gdisconnect():
 if __name__ == '__main__':
     app.debug = True
     app.secret_key = 'super_secret_key'
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='127.0.0.1', port=5000)
