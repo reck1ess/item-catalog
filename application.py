@@ -108,6 +108,33 @@ def addCategoryItem():
         return render_template('addCategoryItem.html', categories=categories)
 
 
+@app.route('/catalog/<int:catalog_id>/items/<int:item_id>/edit', methods=['GET', 'POST'])
+def editCategoryItem(catalog_id, item_id):
+    if 'username' not in login_session:
+        return redirect('/login')
+
+    categoryItem = session.query(CategoryItem).filter_by(id=item_id).first()
+    author = getUserInfo(categoryItem.user_id)
+
+    if author.id != login_session['user_id']:
+        return redirect('/login')
+
+    categories = session.query(Category).all()
+
+    if request.method == 'POST':
+        if request.form['name']:
+            categoryItem.name = request.form['name']
+        if request.form['description']:
+            categoryItem.description = request.form['description']
+        if request.form['picture']:
+            categoryItem.picture = request.form['picture']
+        if request.form['category']:
+            categoryItem.category_id = request.form['category']
+        return redirect(url_for('showCategoryItem', catalog_id=categoryItem.category_id, item_id=categoryItem.id))
+    else:
+        return render_template('editCategoryItem.html', categories=categories, categoryItem=categoryItem)
+
+
 @app.route('/login')
 def login():
     state = ''.join(random.choice(string.ascii_uppercase + string.digits)
