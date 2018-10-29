@@ -275,6 +275,26 @@ def gdisconnect():
         return response
 
 
+@app.route('/catalog/JSON')
+def showCategoriesJSON():
+    categories = session.query(Category).all()
+    return jsonify(categories=[category.serialize for category in categories])
+
+
+@app.route('/catalog/<int:catalog_id>/JSON')
+@app.route('/catalog/<int:catalog_id>/items/JSON')
+def showCategoryJSON(catalog_id):
+    categoryItems = session.query(CategoryItem).filter_by(
+        category_id=catalog_id).all()
+    return jsonify(categoryItems=[categoryItem.serialize for categoryItem in categoryItems])
+
+
+@app.route('/catalog/<int:catalog_id>/items/<int:item_id>/JSON')
+def showCategoryItemJSON(catalog_id, item_id):
+    categoryItem = session.query(CategoryItem).filter_by(id=item_id).first()
+    return jsonify(categoryItem=[categoryItem.serialize])
+
+
 if __name__ == '__main__':
     app.debug = True
     app.secret_key = 'super_secret_key'
