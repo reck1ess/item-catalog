@@ -25,8 +25,10 @@
                 </select>
             </fieldset>
             <a href="{{url_for('showCategoryItem', catalog_id = categoryItem.category_id ,item_id = categoryItem.id )}}" class="button button-outline">Back</a>
-            <input type="submit" value="Save">
-            <p class="flash__message">This is a flash message.</p>
+            <a href="{{url_for('deleteCategoryItem', catalog_id = categoryItem.category_id, item_id = categoryItem.id)}}" class="button u controls__delete">Delete</a>
+            <input type="submit" value="Save"> {% with messages = get_flashed_messages() %} {% if messages %} {% for message in messages %}
+            <p class="flash__message">{{ message }}</p>
+            {% endfor %} {% endif %} {% endwith %}
         </form>
     </div>
 </div>

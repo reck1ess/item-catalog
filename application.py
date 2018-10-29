@@ -135,6 +135,25 @@ def editCategoryItem(catalog_id, item_id):
         return render_template('editCategoryItem.html', categories=categories, categoryItem=categoryItem)
 
 
+@app.route('/catalog/<int:catalog_id>/items/<int:item_id>/delete', methods=['GET', 'POST'])
+def deleteCategoryItem(catalog_id, item_id):
+    if 'username' not in login_session:
+        return redirect('/login')
+
+    categoryItem = session.query(CategoryItem).filter_by(id=item_id).first()
+    author = getUserInfo(categoryItem.user_id)
+
+    if author.id != login_session['user_id']:
+        return redirect('/login')
+
+    if request.method == 'POST':
+        session.delete(categoryItem)
+        session.commit()
+        return redirect(url_for('showCategory', catalog_id=categoryItem.category_id))
+    else:
+        return render_template('deleteCategoryItem.html', categoryItem=categoryItem)
+
+
 @app.route('/login')
 def login():
     state = ''.join(random.choice(string.ascii_uppercase + string.digits)
@@ -259,4 +278,4 @@ def gdisconnect():
 if __name__ == '__main__':
     app.debug = True
     app.secret_key = 'super_secret_key'
-    app.run(host='127.0.0.1', port=5000)
+    app.run(host='localhost', port=5000)
