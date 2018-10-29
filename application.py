@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 from flask import Flask, render_template, url_for, request, redirect, jsonify, make_response, flash
 from sqlalchemy import create_engine, desc
 from sqlalchemy.orm import sessionmaker
@@ -156,6 +157,7 @@ def deleteCategoryItem(catalog_id, item_id):
 
 @app.route('/login')
 def login():
+    # Create anti-forgery state token
     state = ''.join(random.choice(string.ascii_uppercase + string.digits)
                     for x in xrange(32))
     login_session['state'] = state
@@ -181,6 +183,7 @@ def logout():
 
 @app.route('/gconnect', methods=['POST'])
 def gconnect():
+    # Validate anti-forgery state token
     if request.args.get('state') != login_session['state']:
         response = make_response(json.dumps('Invalid state parameter.'), 401)
         response.headers['Content-Type'] = 'application/json'
@@ -198,6 +201,7 @@ def gconnect():
         response.headers['Content-Type'] = 'application/json'
         return response
 
+    # Check that the access token is valid.
     access_token = credentials.access_token
     url = ('https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=%s' %
            access_token)
@@ -209,6 +213,7 @@ def gconnect():
         response.headers['Content-Type'] = 'application/json'
         return response
 
+    # Verify that the access token is used for the intended user.
     gplus_id = credentials.id_token['sub']
     if result['user_id'] != gplus_id:
         response = make_response(json.dumps(
@@ -216,6 +221,7 @@ def gconnect():
         response.headers['Content-Type'] = 'application/json'
         return response
 
+    # Verify that the access token is valid for this app.
     if result['issued_to'] != CLIENT_ID:
         response = make_response(json.dumps(
             "Token's client ID does not match app's."), 401)
