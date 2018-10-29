@@ -64,13 +64,25 @@ ul {
 }
 
 .header__user .user__nav {
-    line-height: 5.2rem;
-    text-decoration: none;
-    font-size: 1.1rem;
-    font-weight: 700;
-    letter-spacing: 0.1rem;
-    text-transform: uppercase;
-    color: #e8bc52;
+    background: url(https://cdn.leagueoflegends.com/riotbar/prod/1.6.179/images/account/sprites-s2a5147f733.png) 0 -293px;
+    color: #b2d9db;
+    float: right;
+    height: 41px;
+    line-height: 28px;
+    margin: 5px 0 0 17px;
+    padding: 6px 0 0 0;
+    position: relative;
+    text-align: center;
+    width: 129px;
+    z-index: 0;
+}
+
+@media (max-width: 768px) {
+    .header__user {
+        display: block;
+        margin: 1rem auto;
+        width: 100%;
+    }
 }
 
 .content .container {
@@ -186,11 +198,6 @@ ul {
 .login__separator {
     font-weight: 700;
     margin: 20px 0;
-}
-
-.login__button--facebook {
-    background: #3b5997;
-    border-color: #3b5997;
 }
 
 .login__button--google {

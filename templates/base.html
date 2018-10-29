@@ -20,6 +20,17 @@
                 <a href="/" class="header__title">
                     <img src="/static/lol_logo.png" />
                 </a>
+                <div class="header__user">
+                    {%if 'username' not in session %}
+                    <a href="{{url_for('login')}}" class="user__nav">
+                        Login
+                    </a>
+                    {% else %}
+                    <a href="{{url_for('logout')}}" class="user__nav">
+                        Logout
+                    </a>
+                    {% endif %}
+                </div>
             </div>
         </header>
         <div class="content">
