@@ -1,9 +1,10 @@
 #!/usr/bin/env python
-from flask import Flask, render_template, url_for, request, redirect, jsonify, make_response, flash
+from flask import Flask, render_template, url_for, request
+from flask import redirect, jsonify, make_response, flash
+from flask import session as login_session
 from sqlalchemy import create_engine, desc
 from sqlalchemy.orm import sessionmaker
 from database_setup import Base, Category, CategoryItem, User
-from flask import session as login_session
 from oauth2client.client import flow_from_clientsecrets, FlowExchangeError
 import random
 import string
@@ -14,7 +15,10 @@ import requests
 
 app = Flask(__name__)
 
-engine = create_engine('sqlite:///itemcatalog.db')
+engine = create_engine('sqlite:///itemcatalog.db',
+                       connect_args={'check_same_thread': False},
+                       poolclass=StaticPool, echo=True)
+
 Base.metadata.bind = engine
 
 DBSession = sessionmaker(bind=engine)
@@ -26,7 +30,8 @@ CLIENT_ID = json.loads(open('client_secrets.json', 'r').read())[
 
 def createUser(login_session):
     newUser = User(name=login_session['username'],
-                   email=login_session['email'], picture=login_session['picture'])
+                   email=login_session['email'],
+                   picture=login_session['picture'])
     session.add(newUser)
     session.commit()
     user = session.query(User).filter_by(email=login_session['email']).one()
@@ -52,7 +57,9 @@ def showCategories():
     categories = session.query(Category).all()
     categoryItems = session.query(CategoryItem).all()
 
-    return render_template('categories.html', categories=categories, categoryItems=categoryItems)
+    return render_template('categories.html',
+                           categories=categories,
+                           categoryItems=categoryItems)
 
 
 @app.route('/catalog/<int:catalog_id>')
@@ -66,8 +73,11 @@ def showCategory(catalog_id):
     categoryItemsCount = session.query(
         CategoryItem).filter_by(category_id=catalog_id).count()
 
-    return render_template('category.html', categories=categories,
-                           categoryItems=categoryItems, categoryName=categoryName, categoryItemsCount=categoryItemsCount)
+    return render_template('category.html',
+                           categories=categories,
+                           categoryItems=categoryItems,
+                           categoryName=categoryName,
+                           categoryItemsCount=categoryItemsCount)
 
 
 @app.route('/catalog/<int:catalog_id>/items/<int:item_id>')
@@ -75,7 +85,9 @@ def showCategoryItem(catalog_id, item_id):
     categoryItem = session.query(CategoryItem).filter_by(id=item_id).first()
     author = getUserInfo(categoryItem.user_id)
 
-    return render_template('categoryItem.html', categoryItem=categoryItem, author=author)
+    return render_template('categoryItem.html',
+                           categoryItem=categoryItem,
+                           author=author)
 
 
 @app.route('/catalog/add', methods=['GET', 'POST'])
@@ -97,8 +109,12 @@ def addCategoryItem():
             flash('Please add a picture')
             return redirect(url_for('addCategoryItem'))
 
-        newCategoryItem = CategoryItem(name=request.form['name'], description=request.form['description'], picture=request.form['picture'],
-                                       category_id=request.form['category'], user_id=login_session['user_id'])
+        newCategoryItem = CategoryItem(name=request.form['name'],
+                                       description=request.form['description'],
+                                       picture=request.form['picture'],
+                                       category_id=request.form['category'],
+                                       user_id=login_session['user_id'])
+
         session.add(newCategoryItem)
         session.commit()
 
@@ -109,7 +125,8 @@ def addCategoryItem():
         return render_template('addCategoryItem.html', categories=categories)
 
 
-@app.route('/catalog/<int:catalog_id>/items/<int:item_id>/edit', methods=['GET', 'POST'])
+@app.route('/catalog/<int:catalog_id>/items/<int:item_id>/edit',
+           methods=['GET', 'POST'])
 def editCategoryItem(catalog_id, item_id):
     if 'username' not in login_session:
         return redirect('/login')
@@ -131,12 +148,17 @@ def editCategoryItem(catalog_id, item_id):
             categoryItem.picture = request.form['picture']
         if request.form['category']:
             categoryItem.category_id = request.form['category']
-        return redirect(url_for('showCategoryItem', catalog_id=categoryItem.category_id, item_id=categoryItem.id))
+        return redirect(url_for('showCategoryItem',
+                                catalog_id=categoryItem.category_id,
+                                item_id=categoryItem.id))
     else:
-        return render_template('editCategoryItem.html', categories=categories, categoryItem=categoryItem)
+        return render_template('editCategoryItem.html',
+                               categories=categories,
+                               categoryItem=categoryItem)
 
 
-@app.route('/catalog/<int:catalog_id>/items/<int:item_id>/delete', methods=['GET', 'POST'])
+@app.route('/catalog/<int:catalog_id>/items/<int:item_id>/delete',
+           methods=['GET', 'POST'])
 def deleteCategoryItem(catalog_id, item_id):
     if 'username' not in login_session:
         return redirect('/login')
@@ -150,9 +172,11 @@ def deleteCategoryItem(catalog_id, item_id):
     if request.method == 'POST':
         session.delete(categoryItem)
         session.commit()
-        return redirect(url_for('showCategory', catalog_id=categoryItem.category_id))
+        return redirect(url_for('showCategory',
+                                catalog_id=categoryItem.category_id))
     else:
-        return render_template('deleteCategoryItem.html', categoryItem=categoryItem)
+        return render_template('deleteCategoryItem.html',
+                               categoryItem=categoryItem)
 
 
 @app.route('/login')
@@ -292,7 +316,8 @@ def showCategoriesJSON():
 def showCategoryJSON(catalog_id):
     categoryItems = session.query(CategoryItem).filter_by(
         category_id=catalog_id).all()
-    return jsonify(categoryItems=[categoryItem.serialize for categoryItem in categoryItems])
+    return jsonify(categoryItems=[categoryItem.serialize
+                                  for categoryItem in categoryItems])
 
 
 @app.route('/catalog/<int:catalog_id>/items/<int:item_id>/JSON')
