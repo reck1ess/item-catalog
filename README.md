@@ -92,3 +92,32 @@ python application.py
 Visit **http://localhost:5000** to view the catalog item app!
 
 You should be able to view many catalog items, and after login you can edit, delete items which you have made.
+
+## JSON Endpoints
+
+**The following endpoints are accesible:**
+
+#### Catalog JSON
+
+```
+/catalog/JSON
+```
+
+> Displays the whole catalog. Categories and all items.
+
+#### Category JSON
+
+```
+/catalog/<int:catalog_id>/JSON
+/catalog/<int:catalog_id>/items/JSON
+```
+
+> Displays items for a specific category
+
+#### Category Item JSON
+
+```
+/catalog/<int:catalog_id>/<path:item_name>/JSON
+```
+
+> Displays a specific category item.
