@@ -40,7 +40,7 @@ class CategoryItem(Base):
     name = Column(String(100), nullable=False)
     description = Column(String(300))
     picture = Column(String(300))
-    category = relationship(Category)
+    category = relationship(Category, cascade="save-update, merge, delete")
     category_id = Column(Integer, ForeignKey('category.id'))
     user = relationship(User)
     user_id = Column(Integer, ForeignKey('user.id'))
